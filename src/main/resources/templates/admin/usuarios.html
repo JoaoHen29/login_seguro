@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/sistema :: pagina(~{::title}, ~{::main}, 'admin')}">
+<head>
+    <title>Usuários | Login Seguro</title>
+</head>
+<body>
+<main class="conteudo">
+    <div class="conteudo__cabecalho">
+        <h1>Usuários</h1>
+        <p>Defina o perfil de cada conta e desative quem não deve mais entrar. Você não pode alterar a sua própria conta.</p>
+    </div>
+
+    <div th:replace="~{fragmentos/comum :: mensagens}"></div>
+
+    <div class="tabela-container">
+        <table class="tabela">
+            <thead>
+            <tr>
+                <th scope="col">Pessoa</th>
+                <th scope="col">Perfil atual</th>
+                <th scope="col">Situação</th>
+                <th scope="col">Criada em</th>
+                <th scope="col">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${usuarios}" th:with="ehVoce=${u.email == usuarioLogado.email}">
+                <td>
+                    <div class="tabela__pessoa">
+                        <span th:text="${u.nome}">Nome</span>
+                        <small th:text="${u.email}">email</small>
+                    </div>
+                </td>
+                <td><span class="perfil" th:classappend="'perfil--' + ${u.perfil.name()}" th:text="${u.perfil.nome}">Perfil</span></td>
+                <td>
+                    <span class="situacao" th:classappend="${u.ativo} ? 'situacao--ativa' : 'situacao--inativa'"
+                          th:text="${!u.ativo} ? 'Desativada' : (${u.estaBloqueado()} ? 'Bloqueada' : 'Ativa')">Ativa</span>
+                </td>
+                <td th:text="${@datas.data(u.criadoEm)}">-</td>
+                <td>
+                    <span class="voce" th:if="${ehVoce}">Esta é a sua conta</span>
+                    <div class="tabela__acoes" th:unless="${ehVoce}">
+                        <form th:action="@{/admin/usuarios/{id}/perfil(id=${u.id})}" method="post">
+                            <label class="visualmente-oculto" th:for="|perfil-${u.id}|">Novo perfil</label>
+                            <select name="perfil" th:id="|perfil-${u.id}|">
+                                <option th:each="p : ${perfis}" th:value="${p.name()}" th:text="${p.nome}"
+                                        th:selected="${p == u.perfil}">Perfil</option>
+                            </select>
+                            <button type="submit" class="botao botao--contorno botao--pequeno">Salvar perfil</button>
+                        </form>
+                        <form th:action="@{/admin/usuarios/{id}/status(id=${u.id})}" method="post">
+                            <button type="submit" class="botao botao--pequeno"
+                                    th:classappend="${u.ativo} ? 'botao--perigo' : 'botao--contorno'"
+                                    th:text="${u.ativo} ? 'Desativar' : 'Reativar'">Desativar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

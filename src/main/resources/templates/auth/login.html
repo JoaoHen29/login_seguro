@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/acesso :: pagina(~{::title}, ~{::main})}">
+<head>
+    <title>Entrar | Login Seguro</title>
+</head>
+<body>
+<main class="formulario">
+    <div class="formulario__cabecalho">
+        <h2>Entrar</h2>
+        <p>Use o e-mail e a senha da sua conta.</p>
+    </div>
+
+    <p class="alerta alerta--erro" role="alert" th:if="${param.erro}">E-mail ou senha incorretos.</p>
+    <p class="alerta alerta--erro" role="alert" th:if="${param.bloqueado}">
+        Conta bloqueada por excesso de tentativas. Aguarde 15 minutos e tente de novo.
+    </p>
+    <p class="alerta alerta--erro" role="alert" th:if="${param.inativo}">
+        Esta conta foi desativada por um administrador.
+    </p>
+    <p class="alerta alerta--sucesso" role="status" th:if="${param.cadastrado}">
+        Conta criada. Entre com o e-mail e a senha que você cadastrou.
+    </p>
+    <p class="alerta alerta--info" role="status" th:if="${param.saiu}">Você saiu do sistema.</p>
+
+    <form class="formulario" th:action="@{/login}" method="post" novalidate>
+        <div class="campo">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="username" required autofocus>
+        </div>
+        <div class="campo">
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="botao botao--largo">Entrar</button>
+    </form>
+
+    <p class="formulario__rodape">Ainda não tem conta? <a th:href="@{/cadastro}">Criar conta</a></p>
+</main>
+</body>
+</html>

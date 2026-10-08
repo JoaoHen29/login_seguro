@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/sistema :: pagina(~{::title}, ~{::main}, 'moderacao')}">
+<head>
+    <title>Moderação | Login Seguro</title>
+</head>
+<body>
+<main class="conteudo">
+    <div class="conteudo__cabecalho">
+        <h1>Moderação</h1>
+        <p>Visão geral das contas e dos últimos acessos ao sistema. Moderadores consultam; só administradores alteram perfis.</p>
+    </div>
+
+    <section class="contadores" aria-label="Contas por perfil">
+        <div class="contador" th:each="item : ${totais}" th:classappend="'contador--' + ${item.key.name()}">
+            <strong th:text="${item.value}">0</strong>
+            <span th:text="${item.key.nome} + (${item.value == 1} ? ' cadastrado' : ' cadastrados')">Usuários</span>
+        </div>
+    </section>
+
+    <section class="secao" aria-labelledby="titulo-contas">
+        <div class="secao__titulo">
+            <h2 id="titulo-contas">Contas</h2>
+            <p th:text="|${#lists.size(usuarios)} no total|">0 no total</p>
+        </div>
+        <div class="tabela-container">
+            <table class="tabela">
+                <thead>
+                <tr>
+                    <th scope="col">Pessoa</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Situação</th>
+                    <th scope="col">Último acesso</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${usuarios}">
+                    <td>
+                        <div class="tabela__pessoa">
+                            <span th:text="${u.nome}">Nome</span>
+                            <small th:text="${u.email}">email</small>
+                        </div>
+                    </td>
+                    <td><span class="perfil" th:classappend="'perfil--' + ${u.perfil.name()}" th:text="${u.perfil.nome}">Perfil</span></td>
+                    <td>
+                        <span class="situacao" th:classappend="${u.ativo} ? 'situacao--ativa' : 'situacao--inativa'"
+                              th:text="${!u.ativo} ? 'Desativada' : (${u.estaBloqueado()} ? 'Bloqueada' : 'Ativa')">Ativa</span>
+                    </td>
+                    <td th:text="${@datas.dataHora(u.ultimoAcesso)}">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="secao" aria-labelledby="titulo-registro">
+        <div class="secao__titulo">
+            <h2 id="titulo-registro">Registro de acessos</h2>
+            <p>Os 30 eventos mais recentes</p>
+        </div>
+        <div class="tabela-container" th:if="${!#lists.isEmpty(acessos)}">
+            <table class="tabela">
+                <thead>
+                <tr>
+                    <th scope="col">Quando</th>
+                    <th scope="col">E-mail</th>
+                    <th scope="col">Evento</th>
+                    <th scope="col">Origem</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${acessos}">
+                    <td th:text="${@datas.dataHora(a.data)}">-</td>
+                    <td th:text="${a.email}">email</td>
+                    <td>
+                        <span class="situacao"
+                              th:classappend="${a.evento.name() == 'FALHA' or a.evento.name() == 'BLOQUEIO'} ? 'situacao--inativa' : ''"
+                              th:text="${a.evento.descricao}">Entrada</span>
+                    </td>
+                    <td th:text="|${a.navegador}, IP ${a.ip}|">Chrome</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="vazio" th:if="${#lists.isEmpty(acessos)}">Nenhum acesso registrado ainda.</p>
+    </section>
+</main>
+</body>
+</html>

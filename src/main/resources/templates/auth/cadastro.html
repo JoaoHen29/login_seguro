@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/acesso :: pagina(~{::title}, ~{::main})}">
+<head>
+    <title>Criar conta | Login Seguro</title>
+</head>
+<body>
+<main class="formulario">
+    <div class="formulario__cabecalho">
+        <h2>Criar conta</h2>
+        <p>Toda conta nova começa com o perfil Usuário.</p>
+    </div>
+
+    <form class="formulario" th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
+        <div class="campo" th:classappend="${#fields.hasErrors('nome')} ? 'campo--erro'">
+            <label for="nome">Nome completo</label>
+            <input id="nome" type="text" th:field="*{nome}" autocomplete="name" required>
+            <span class="campo__erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}">Erro</span>
+        </div>
+        <div class="campo" th:classappend="${#fields.hasErrors('email')} ? 'campo--erro'">
+            <label for="email">E-mail</label>
+            <input id="email" type="email" th:field="*{email}" autocomplete="email" required>
+            <span class="campo__erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Erro</span>
+        </div>
+        <div class="campo" th:classappend="${#fields.hasErrors('senha')} ? 'campo--erro'">
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="new-password" required>
+            <span class="campo__ajuda" th:unless="${#fields.hasErrors('senha')}">Mínimo de 8 caracteres, com letras e números.</span>
+            <span class="campo__erro" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}">Erro</span>
+        </div>
+        <div class="campo" th:classappend="${#fields.hasErrors('confirmacaoSenha')} ? 'campo--erro'">
+            <label for="confirmacaoSenha">Repita a senha</label>
+            <input id="confirmacaoSenha" name="confirmacaoSenha" type="password" autocomplete="new-password" required>
+            <span class="campo__erro" th:if="${#fields.hasErrors('confirmacaoSenha')}" th:errors="*{confirmacaoSenha}">Erro</span>
+        </div>
+        <button type="submit" class="botao botao--largo">Criar conta</button>
+    </form>
+
+    <p class="formulario__rodape">Já tem conta? <a th:href="@{/login}">Entrar</a></p>
+</main>
+</body>
+</html>
