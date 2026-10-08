@@ -124,7 +124,3 @@ Nenhum template ou classe Java precisa mudar. Para mudar o nome ou o slogan do s
 - `main`: versões entregues, marcadas com tags (`v1.0.0`)
 - `develop`: integração das funcionalidades
 - `feature/*`: uma branch por funcionalidade, unida à `develop` com `--no-ff`
-
-***REMOVED***
-
-***REMOVED***
