@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/sistema :: pagina(~{::title}, ~{::main}, 'painel')}">
+<head>
+    <title>Minha credencial | Login Seguro</title>
+</head>
+<body>
+<main class="conteudo" th:with="u=${usuarioLogado}">
+    <div class="conteudo__cabecalho">
+        <h1 th:text="|Olá, ${#strings.arraySplit(u.nome, ' ')[0]}|">Olá</h1>
+        <p>Esta é a sua credencial no sistema. O carimbo mostra o perfil que define o que você pode acessar.</p>
+    </div>
+
+    <article class="credencial" aria-label="Credencial do usuário">
+        <div class="ondas"></div>
+        <header class="credencial__cabecalho">
+            <strong th:text="${aparencia.nomeSistema()}">Login Seguro</strong>
+            <span>Credencial de acesso</span>
+        </header>
+
+        <div class="credencial__foto" aria-hidden="true" th:text="${u.iniciais}">JH</div>
+
+        <dl class="credencial__dados">
+            <div class="credencial__nome">
+                <dt>Nome</dt>
+                <dd th:text="${u.nome}">Nome</dd>
+            </div>
+            <div>
+                <dt>E-mail</dt>
+                <dd th:text="${u.email}">email</dd>
+            </div>
+            <div>
+                <dt>Perfil</dt>
+                <dd th:text="|${u.perfil.nome}: ${u.perfil.descricao}|">Perfil</dd>
+            </div>
+            <div>
+                <dt>Conta criada em</dt>
+                <dd th:text="${@datas.data(u.criadoEm)}">01/01/2026</dd>
+            </div>
+            <div>
+                <dt>Acesso atual iniciado em</dt>
+                <dd th:text="${@datas.dataHora(u.ultimoAcesso)}">01/01/2026</dd>
+            </div>
+        </dl>
+
+        <div class="carimbo"
+             th:classappend="'carimbo--' + ${#strings.toLowerCase(u.perfil.name())}"
+             role="img" th:attr="aria-label=|Perfil ${u.perfil.nome}|">
+            <div>
+                <span>Acesso</span>
+                <strong th:text="${u.perfil.nome}">Usuário</strong>
+                <span th:text="${@datas.data(u.ultimoAcesso)}">07/10/2026</span>
+            </div>
+        </div>
+
+        <div class="mrz" aria-hidden="true">
+            <span th:text="${u.mrzLinha1}">LS</span>
+            <span th:text="${u.mrzLinha2}">000</span>
+        </div>
+    </article>
+
+    <section class="secao" aria-labelledby="titulo-acessos">
+        <div class="secao__titulo">
+            <h2 id="titulo-acessos">Seus últimos acessos</h2>
+            <p>Se aparecer algo que não foi você, troque a senha.</p>
+        </div>
+        <ol class="linha-do-tempo" th:if="${!#lists.isEmpty(acessos)}">
+            <li th:each="acesso : ${acessos}" th:class="'evento--' + ${acesso.evento.name()}">
+                <time th:text="${@datas.dataHora(acesso.data)}">07/10/2026 às 22:00</time>
+                <span th:text="${acesso.evento.descricao}">Entrada</span>
+                <small th:text="|${acesso.navegador}, IP ${acesso.ip}|">Chrome</small>
+            </li>
+        </ol>
+        <p class="vazio" th:if="${#lists.isEmpty(acessos)}">Nenhum acesso registrado ainda.</p>
+    </section>
+</main>
+</body>
+</html>

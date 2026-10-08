@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/comum :: cabeca(~{::title})}">
+    <title>Erro no servidor | Login Seguro</title>
+</head>
+<body>
+<main class="pagina-erro">
+    <div class="guilhoche"></div>
+    <div class="pagina-erro__cartao">
+        <h1>Algo falhou do nosso lado</h1>
+        <p>O servidor não conseguiu concluir o pedido. Se o problema continuar, verifique a conexão com o MongoDB Atlas.</p>
+        <a class="botao" th:href="@{/painel}">Tentar de novo</a>
+    </div>
+</main>
+</body>
+</html>

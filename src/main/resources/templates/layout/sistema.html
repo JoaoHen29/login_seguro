@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, conteudo, secaoAtiva)">
+<head th:replace="~{fragmentos/comum :: cabeca(${titulo})}"></head>
+<body>
+<header class="topo">
+    <a class="topo__marca" th:href="@{/painel}">
+        <svg th:replace="~{fragmentos/comum :: selo}"></svg>
+        <span th:text="${aparencia.nomeSistema()}">Login Seguro</span>
+    </a>
+    <nav aria-label="Principal">
+        <ul class="topo__menu">
+            <li><a th:href="@{/painel}" th:attr="aria-current=${secaoAtiva == 'painel'} ? 'page' : null">Minha credencial</a></li>
+            <li th:if="${usuarioLogado != null and usuarioLogado.podeModerar}">
+                <a th:href="@{/moderacao}" th:attr="aria-current=${secaoAtiva == 'moderacao'} ? 'page' : null">Moderação</a>
+            </li>
+            <li th:if="${usuarioLogado != null and usuarioLogado.admin}">
+                <a th:href="@{/admin/usuarios}" th:attr="aria-current=${secaoAtiva == 'admin'} ? 'page' : null">Usuários</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="topo__usuario" th:if="${usuarioLogado != null}">
+        <span class="topo__nome" th:text="${usuarioLogado.nome}">Nome</span>
+        <span class="perfil" th:classappend="'perfil--' + ${usuarioLogado.perfil.name()}"
+              th:text="${usuarioLogado.perfil.nome}">Perfil</span>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="botao botao--contorno botao--pequeno">Sair</button>
+        </form>
+    </div>
+</header>
+<main th:replace="${conteudo}"></main>
+<footer class="rodape">
+    Tema visual em uso: <span th:text="${tema}">documento</span>
+</footer>
+</body>
+</html>

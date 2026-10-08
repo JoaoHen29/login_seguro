@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, conteudo)">
+<head th:replace="~{fragmentos/comum :: cabeca(${titulo})}"></head>
+<body>
+<div class="acesso">
+    <section class="acesso__documento" aria-label="Sobre o sistema">
+        <div class="guilhoche"></div>
+        <div class="acesso__marca">
+            <svg th:replace="~{fragmentos/comum :: selo}"></svg>
+            <span th:text="${aparencia?.nomeSistema() ?: 'Login Seguro'}">Login Seguro</span>
+        </div>
+        <h1 class="acesso__titulo" th:text="${aparencia?.slogan() ?: 'Sua identidade, conferida a cada acesso.'}">Sua identidade, conferida a cada acesso.</h1>
+        <ul class="acesso__garantias">
+            <li>
+                <svg th:replace="~{fragmentos/comum :: icone-check}"></svg>
+                <span><strong>Senha nunca guardada em texto.</strong> Ela vira um hash BCrypt antes de chegar ao banco.</span>
+            </li>
+            <li>
+                <svg th:replace="~{fragmentos/comum :: icone-check}"></svg>
+                <span><strong>Sessão protegida.</strong> Fica no MongoDB Atlas e expira após 30 minutos sem uso.</span>
+            </li>
+            <li>
+                <svg th:replace="~{fragmentos/comum :: icone-check}"></svg>
+                <span><strong>Bloqueio automático.</strong> Cinco senhas erradas seguidas travam a conta por 15 minutos.</span>
+            </li>
+        </ul>
+    </section>
+    <section class="acesso__formulario">
+        <main th:replace="${conteudo}"></main>
+    </section>
+</div>
+</body>
+</html>

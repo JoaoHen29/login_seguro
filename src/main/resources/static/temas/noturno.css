@@ -1,0 +1,21 @@
+:root {
+    --papel: #121a29;
+    --papel-painel: #19233a;
+    --papel-campo: #0e1522;
+    --tinta: #e4ece6;
+    --tinta-suave: #9aa9bd;
+    --linha: #2b3853;
+    --guilhoche: #2f5560;
+    --guilhoche-forte: #6fa596;
+    --foco: #7cc0d8;
+    --acao: #cfe3d8;
+    --acao-texto: #121a29;
+    --erro: #f08a9c;
+    --erro-fundo: #3a1c26;
+    --sucesso: #9fd08f;
+    --sucesso-fundo: #1d3324;
+    --perfil-admin: #f08a9c;
+    --perfil-moderador: #7cc0d8;
+    --perfil-usuario: #a8d58f;
+    --sombra-documento: 0 18px 40px -24px rgba(0, 0, 0, 0.8);
+}
