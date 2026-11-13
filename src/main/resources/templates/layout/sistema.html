@@ -11,6 +11,9 @@
         <ul class="topo__menu">
             <li><a th:href="@{/painel}" th:attr="aria-current=${secaoAtiva == 'painel'} ? 'page' : null">Minha credencial</a></li>
             <li th:if="${usuarioLogado != null and usuarioLogado.podeModerar}">
+                <a th:href="@{/dashboard}" th:attr="aria-current=${secaoAtiva == 'dashboard'} ? 'page' : null">Dashboard</a>
+            </li>
+            <li th:if="${usuarioLogado != null and usuarioLogado.podeModerar}">
                 <a th:href="@{/moderacao}" th:attr="aria-current=${secaoAtiva == 'moderacao'} ? 'page' : null">Moderação</a>
             </li>
             <li th:if="${usuarioLogado != null and usuarioLogado.admin}">
