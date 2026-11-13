@@ -3,8 +3,10 @@ package com.joaohen.login_seguro.config;
 import com.joaohen.login_seguro.seguranca.LoginFalhaHandler;
 import com.joaohen.login_seguro.seguranca.LoginSucessoHandler;
 import com.joaohen.login_seguro.seguranca.LogoutRegistroHandler;
+import com.joaohen.login_seguro.seguranca.RespostaSegurancaApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,7 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private static final String[] ROTAS_PUBLICAS = {
-            "/login", "/cadastro", "/css/**", "/temas/**", "/img/**", "/favicon.ico", "/error"
+            "/login", "/cadastro", "/css/**", "/js/**", "/temas/**", "/img/**", "/favicon.ico", "/error"
     };
 
     @Bean
@@ -25,6 +27,22 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
+    public SecurityFilterChain filtroDaApi(HttpSecurity http, RespostaSegurancaApi respostas) throws Exception {
+        http
+                .securityMatcher("/api/**")
+                .authorizeHttpRequests(rotas -> rotas
+                        .anyRequest().hasAnyRole("ADMIN", "MODERADOR"))
+                .httpBasic(basic -> basic.authenticationEntryPoint(respostas))
+                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(erros -> erros
+                        .authenticationEntryPoint(respostas)
+                        .accessDeniedHandler(respostas));
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain filtroDeSeguranca(HttpSecurity http,
                                                  LoginSucessoHandler sucesso,
                                                  LoginFalhaHandler falha,
@@ -33,7 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(rotas -> rotas
                         .requestMatchers(ROTAS_PUBLICAS).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/moderacao/**").hasAnyRole("ADMIN", "MODERADOR")
+                        .requestMatchers("/moderacao/**", "/dashboard/**").hasAnyRole("ADMIN", "MODERADOR")
                         .anyRequest().authenticated())
                 .formLogin(login -> login
                         .loginPage("/login")
