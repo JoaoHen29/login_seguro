@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/sistema :: pagina(~{::title}, ~{::main}, 'dashboard')}">
+<head>
+    <title>Dashboard de chamados</title>
+</head>
+<body>
+<main class="conteudo conteudo--largo painel" id="painel" th:data-api="@{/api}" th:data-login="@{/login}">
+
+    <div class="painel__topo">
+        <div class="conteudo__cabecalho">
+            <h1>Chamados técnicos</h1>
+            <p>Acompanhe o andamento da operação e veja onde a equipe precisa agir primeiro.</p>
+        </div>
+        <div class="atualizacao">
+            <span id="ultima-atualizacao" aria-live="polite">Carregando dados...</span>
+            <label class="interruptor">
+                <input type="checkbox" id="auto-atualizar" checked>
+                Atualizar a cada minuto
+            </label>
+            <button type="button" class="botao botao--contorno botao--pequeno" id="atualizar-agora">Atualizar agora</button>
+        </div>
+    </div>
+
+    <form class="filtros" id="filtros" novalidate>
+        <fieldset class="filtros__periodo">
+            <legend>Período de abertura</legend>
+            <div class="atalhos" role="group" aria-label="Atalhos de período">
+                <button type="button" class="atalho" data-dias="7" aria-pressed="false">7 dias</button>
+                <button type="button" class="atalho" data-dias="30" aria-pressed="false">30 dias</button>
+                <button type="button" class="atalho" data-dias="90" aria-pressed="false">90 dias</button>
+                <button type="button" class="atalho" data-dias="180" aria-pressed="false">6 meses</button>
+            </div>
+            <div class="campo campo--compacto">
+                <label for="inicio">De</label>
+                <input type="date" id="inicio" name="inicio">
+            </div>
+            <div class="campo campo--compacto">
+                <label for="fim">Até</label>
+                <input type="date" id="fim" name="fim">
+            </div>
+        </fieldset>
+        <div class="campo campo--compacto">
+            <label for="status">Status</label>
+            <select id="status" name="status"><option value="">Todos</option></select>
+        </div>
+        <div class="campo campo--compacto">
+            <label for="tipo">Tipo</label>
+            <select id="tipo" name="tipo"><option value="">Todos</option></select>
+        </div>
+        <div class="campo campo--compacto">
+            <label for="prioridade">Prioridade</label>
+            <select id="prioridade" name="prioridade"><option value="">Todas</option></select>
+        </div>
+        <div class="campo campo--compacto">
+            <label for="tecnico">Técnico</label>
+            <select id="tecnico" name="tecnico"><option value="">Todos</option></select>
+        </div>
+        <div class="campo campo--compacto">
+            <label for="agrupamento">Agrupar gráfico</label>
+            <select id="agrupamento" name="agrupamento"></select>
+        </div>
+        <div class="filtros__acoes">
+            <button type="submit" class="botao botao--pequeno">Aplicar filtros</button>
+            <button type="button" class="botao botao--contorno botao--pequeno" id="limpar-filtros">Limpar</button>
+        </div>
+    </form>
+
+    <div class="alerta alerta--erro" id="erro-dashboard" role="alert" hidden></div>
+    <p class="vazio" id="sem-resultados" hidden>
+        Nenhum chamado foi aberto no período com esses filtros. Amplie o período ou limpe os filtros.
+    </p>
+
+    <section aria-labelledby="titulo-indicadores">
+        <h2 id="titulo-indicadores" class="visualmente-oculto">Indicadores gerais</h2>
+        <dl class="indicadores">
+            <div class="indicador" data-indicador="total">
+                <dt>Chamados no período</dt>
+                <dd class="indicador__valor" data-valor="total">–</dd>
+                <dd class="indicador__nota" data-nota="total"></dd>
+            </div>
+            <div class="indicador" data-indicador="pendentes">
+                <dt>Pendentes</dt>
+                <dd class="indicador__valor" data-valor="pendentes">–</dd>
+                <dd class="indicador__nota" data-nota="pendentes"></dd>
+            </div>
+            <div class="indicador" data-indicador="resolucao">
+                <dt>Taxa de resolução</dt>
+                <dd class="indicador__valor" data-valor="resolucao">–</dd>
+                <dd class="indicador__nota" data-nota="resolucao"></dd>
+            </div>
+            <div class="indicador" data-indicador="prazo">
+                <dt>Fora do prazo</dt>
+                <dd class="indicador__valor" data-valor="prazo">–</dd>
+                <dd class="indicador__nota" data-nota="prazo"></dd>
+            </div>
+            <div class="indicador" data-indicador="primeiro">
+                <dt>Primeiro atendimento</dt>
+                <dd class="indicador__valor" data-valor="primeiro">–</dd>
+                <dd class="indicador__nota" data-nota="primeiro"></dd>
+            </div>
+            <div class="indicador" data-indicador="resolucaoMedia">
+                <dt>Tempo de resolução</dt>
+                <dd class="indicador__valor" data-valor="resolucaoMedia">–</dd>
+                <dd class="indicador__nota" data-nota="resolucaoMedia"></dd>
+            </div>
+        </dl>
+    </section>
+
+    <div class="grade-painel">
+        <section class="cartao cartao--largo" aria-labelledby="titulo-periodo">
+            <header class="cartao__cabecalho">
+                <h2 id="titulo-periodo">Abertos e resolvidos por período</h2>
+                <p id="resumo-periodo"></p>
+            </header>
+            <div class="grafico">
+                <canvas id="grafico-periodo" role="img"
+                        aria-label="Gráfico de chamados abertos e resolvidos por período"></canvas>
+            </div>
+        </section>
+
+        <section class="cartao" aria-labelledby="titulo-situacao">
+            <header class="cartao__cabecalho">
+                <h2 id="titulo-situacao">Situação dos chamados</h2>
+                <p>Chamados do período, por status atual</p>
+            </header>
+            <div class="rosca">
+                <div class="grafico grafico--rosca">
+                    <canvas id="grafico-situacao" role="img" aria-label="Gráfico de chamados por status"></canvas>
+                    <div class="rosca__centro">
+                        <strong id="total-situacao">–</strong>
+                        <span>chamados</span>
+                    </div>
+                </div>
+                <ul class="legenda" id="legenda-situacao"></ul>
+            </div>
+        </section>
+
+        <section class="cartao" aria-labelledby="titulo-tipos">
+            <header class="cartao__cabecalho">
+                <h2 id="titulo-tipos">Tipos mais atendidos</h2>
+                <p>Total de chamados e resolvidos por tipo</p>
+            </header>
+            <div class="grafico">
+                <canvas id="grafico-tipos" role="img" aria-label="Gráfico dos tipos de chamado mais atendidos"></canvas>
+            </div>
+            <table class="tabela tabela--compacta">
+                <thead>
+                <tr>
+                    <th scope="col">Tipo</th>
+                    <th scope="col" class="numero">Participação</th>
+                    <th scope="col" class="numero">Tempo médio de resolução</th>
+                </tr>
+                </thead>
+                <tbody id="tabela-tipos"></tbody>
+            </table>
+        </section>
+
+        <section class="cartao cartao--largo" aria-labelledby="titulo-antigos">
+            <header class="cartao__cabecalho">
+                <h2 id="titulo-antigos">Pendentes há mais tempo</h2>
+                <p>Os primeiros da fila, que precisam de atenção</p>
+            </header>
+            <ol class="fila" id="lista-antigos"></ol>
+        </section>
+    </div>
+
+    <section class="cartao" aria-labelledby="titulo-chamados">
+        <header class="cartao__cabecalho">
+            <h2 id="titulo-chamados">Chamados</h2>
+            <p id="resumo-chamados"></p>
+        </header>
+        <div class="tabela-container">
+            <table class="tabela">
+                <thead>
+                <tr>
+                    <th scope="col">Protocolo</th>
+                    <th scope="col">Título</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Prioridade</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Técnico</th>
+                    <th scope="col">Aberto em</th>
+                    <th scope="col">Prazo</th>
+                </tr>
+                </thead>
+                <tbody id="tabela-chamados"></tbody>
+            </table>
+        </div>
+        <nav class="paginacao" aria-label="Páginas de chamados">
+            <button type="button" class="botao botao--contorno botao--pequeno" id="pagina-anterior">Anterior</button>
+            <span id="pagina-atual"></span>
+            <button type="button" class="botao botao--contorno botao--pequeno" id="pagina-proxima">Próxima</button>
+        </nav>
+    </section>
+
+    <dialog class="detalhe" id="detalhe-chamado" aria-labelledby="detalhe-titulo">
+        <div class="detalhe__conteudo">
+            <div class="detalhe__cabecalho">
+                <div>
+                    <p class="detalhe__protocolo" id="detalhe-protocolo"></p>
+                    <h2 id="detalhe-titulo"></h2>
+                    <span id="detalhe-status"></span>
+                </div>
+                <button type="button" class="botao botao--contorno botao--pequeno" id="fechar-detalhe">Fechar</button>
+            </div>
+            <p id="detalhe-descricao"></p>
+            <dl class="detalhe__dados" id="detalhe-dados"></dl>
+            <h3>Histórico e considerações técnicas</h3>
+            <ol class="historico" id="detalhe-historico"></ol>
+        </div>
+    </dialog>
+
+    <script th:src="@{/js/chart.umd.js}"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
+</main>
+</body>
+</html>
