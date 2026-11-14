@@ -732,4 +732,3 @@ Cada `feature/*` foi unida à `develop` com `--no-ff` e a versão final foi publ
 
 ---
 
-*Apoio de IA: o desenvolvimento contou com o auxílio do Claude (Anthropic) para orientação, revisão de código e redação da documentação. O uso de IA foi autorizado pelo professor.*
