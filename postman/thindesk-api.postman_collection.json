@@ -1,0 +1,457 @@
+{
+  "info": {
+    "_postman_id": "cf486d28-b107-4869-810c-1df1a2403faf",
+    "name": "Thindesk API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58482058",
+    "_collection_link": "https://go.postman.co/collection/58482058-cf486d28-b107-4869-810c-1df1a2403faf?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "A - Abrir chamado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 201 Created\", () => pm.response.to.have.status(201));\r\nconst corpo = pm.response.json();\r\npm.test(\"Gera protocolo no formato TD-000000 com status ABERTO\", () => {\r\n    pm.expect(corpo.chamado.protocolo).to.match(/^TD-\\d{6}$/);\r\n    pm.expect(corpo.chamado.status).to.eql(\"ABERTO\");\r\n});\r\npm.test(\"Informa o endereço do novo chamado no header Location\", () => {\r\n    pm.response.to.have.header(\"Location\");\r\n});\r\npm.environment.set(\"protocolo\", corpo.chamado.protocolo);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"titulo\": \"Computador do caixa não liga\",\r\n  \"descricao\": \"O computador do caixa 2 não liga desde a manhã. A luz da fonte não acende.\",\r\n  \"tipo\": \"HARDWARE\",\r\n  \"prioridade\": \"ALTA\",\r\n  \"solicitante\": \"João Henrique\",\r\n  \"setor\": \"Financeiro\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chamados",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chamados"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "E - Abrir chamado sem dados",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 400 Bad Request\", () => pm.response.to.have.status(400));\r\npm.test(\"Aponta os campos obrigatórios que faltaram\", () => {\r\n    pm.expect(pm.response.json().campos).to.include.keys(\"titulo\", \"descricao\", \"tipo\", \"setor\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chamados",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chamados"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "B - Iniciar atendimento",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 200 OK\", () => pm.response.to.have.status(200));\r\npm.test(\"Chamado passa para EM_ATENDIMENTO com técnico\", () => {\r\n    const chamado = pm.response.json().chamado;\r\n    pm.expect(chamado.status).to.eql(\"EM_ATENDIMENTO\");\r\n    pm.expect(chamado.tecnicoResponsavel).to.eql(\"Ana Ribeiro\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"status\": \"EM_ATENDIMENTO\",\r\n  \"consideracao\": \"Verificando a fonte de alimentação.\",\r\n  \"tecnicoResponsavel\": \"Ana Ribeiro\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chamados/{{protocolo}}/status",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chamados",
+            "{{protocolo}}",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "C - Resolver chamado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 200 OK\", () => pm.response.to.have.status(200));\r\nconst corpo = pm.response.json();\r\npm.test(\"Chamado fica RESOLVIDO com data de encerramento\", () => {\r\n    pm.expect(corpo.chamado.status).to.eql(\"RESOLVIDO\");\r\n    pm.expect(corpo.chamado.encerradoEm).to.not.be.null;\r\n});\r\npm.test(\"Histórico guarda as 3 considerações técnicas\", () => {\r\n    pm.expect(corpo.historico).to.have.lengthOf(3);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"status\": \"RESOLVIDO\",\r\n  \"consideracao\": \"Fonte queimada substituída. Equipamento testado e funcionando.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chamados/{{protocolo}}/status",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chamados",
+            "{{protocolo}}",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "D - Alterar chamado resolvido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 422 Unprocessable Content\", () => pm.response.to.have.status(422));\r\npm.test(\"Explica que chamado resolvido não pode ser alterado\", () => {\r\n    pm.expect(pm.response.json().mensagem).to.include(\"não pode mais ser alterado\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"status\": \"RESOLVIDO\",\r\n  \"consideracao\": \"Fonte queimada substituída. Equipamento testado e funcionando.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chamados/{{protocolo}}/status",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chamados",
+            "{{protocolo}}",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "F - Acesso negado para USUARIO",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 403 Forbidden\", () => pm.response.to.have.status(403));\r\npm.test(\"Explica que a API é restrita a ADMIN e MODERADOR\", () => {\r\n    pm.expect(pm.response.json().mensagem).to.include(\"restrita a ADMIN e MODERADOR\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "username",
+              "value": "{{emailUsuario}}",
+              "type": "string"
+            },
+            {
+              "key": "password",
+              "value": "{{senhaUsuario}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dashboard/indicadores",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dashboard",
+            "indicadores"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "G - Indicadores do dashboard",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 200 OK\", () => pm.response.to.have.status(200));\r\nconst dados = pm.response.json();\r\npm.test(\"Traz os indicadores gerais do período\", () => {\r\n    pm.expect(dados).to.include.keys(\"totalChamados\", \"pendentes\", \"resolvidos\", \"taxaResolucao\", \"percentualForaDoPrazo\", \"tempoMedioResolucaoHoras\");\r\n    pm.expect(dados.totalChamados).to.be.above(0);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dashboard/indicadores?inicio=2026-08-01&fim=2026-11-13",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dashboard",
+            "indicadores"
+          ],
+          "query": [
+            {
+              "key": "inicio",
+              "value": "2026-08-01"
+            },
+            {
+              "key": "fim",
+              "value": "2026-11-13"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "H - Atendimentos por mês",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 200 OK\", () => pm.response.to.have.status(200));\r\nconst serie = pm.response.json();\r\npm.test(\"Agrupa os pontos por mês\", () => pm.expect(serie.agrupamento).to.eql(\"MES\"));\r\npm.test(\"Soma dos pontos bate com o total de abertos\", () => {\r\n    const soma = serie.pontos.reduce((total, ponto) => total + ponto.abertos, 0);\r\n    pm.expect(soma).to.eql(serie.totalAbertos);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dashboard/atendimentos-por-periodo?inicio=2026-06-01&fim=2026-11-13&agrupamento=MES",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dashboard",
+            "atendimentos-por-periodo"
+          ],
+          "query": [
+            {
+              "key": "inicio",
+              "value": "2026-06-01"
+            },
+            {
+              "key": "fim",
+              "value": "2026-11-13"
+            },
+            {
+              "key": "agrupamento",
+              "value": "MES"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "I - Tipos mais atendidos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 200 OK\", () => pm.response.to.have.status(200));\r\nconst tipos = pm.response.json();\r\npm.test(\"Respeita o limite de 3 tipos\", () => pm.expect(tipos.length).to.be.at.most(3));\r\npm.test(\"Ordena do mais atendido para o menos atendido\", () => {\r\n    for (let i = 1; i < tipos.length; i++) {\r\n        pm.expect(tipos[i - 1].total).to.be.at.least(tipos[i].total);\r\n    }\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dashboard/tipos-mais-atendidos?limite=3",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dashboard",
+            "tipos-mais-atendidos"
+          ],
+          "query": [
+            {
+              "key": "limite",
+              "value": "3"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "J - Período inválido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 400 Bad Request\", () => pm.response.to.have.status(400));\r\npm.test(\"Explica que a data inicial é posterior à final\", () => {\r\n    pm.expect(pm.response.json().mensagem).to.include(\"data inicial\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/dashboard/indicadores?inicio=2026-11-13&fim=2026-11-01",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "dashboard",
+            "indicadores"
+          ],
+          "query": [
+            {
+              "key": "inicio",
+              "value": "2026-11-13"
+            },
+            {
+              "key": "fim",
+              "value": "2026-11-01"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "K - Chamado inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Retorna 404 Not Found\", () => pm.response.to.have.status(404));\r\npm.test(\"Informa qual chamado não foi encontrado\", () => {\r\n    pm.expect(pm.response.json().mensagem).to.include(\"TD-999999\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/chamados/TD-999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chamados",
+            "TD-999999"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{email}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{senha}}",
+        "type": "string"
+      }
+    ]
+  }
+}

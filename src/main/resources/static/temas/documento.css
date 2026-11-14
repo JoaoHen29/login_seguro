@@ -18,4 +18,10 @@
     --perfil-moderador: #2f6f8f;
     --perfil-usuario: #4e7a3a;
     --sombra-documento: 0 1px 0 #ffffff inset, 0 18px 40px -24px rgba(31, 42, 68, 0.45);
+    --status-aberto: #2f6f8f;
+    --status-atendimento: #6b5ca5;
+    --status-aguardando: #b07a1e;
+    --status-resolvido: #3d6b37;
+    --status-cancelado: #8a93a3;
+    --grafico-barra: #9fb4c7;
 }
