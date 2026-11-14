@@ -1,9 +1,30 @@
-# Login Seguro
+# Thindesk: Login Seguro e Dashboard de Chamados
 
-Sistema de autenticação e autorização com **Spring Boot 4.1**, **Spring Security**, **Thymeleaf** e **MongoDB Atlas**.
-Foi feito de forma modular para servir de base a outros projetos: a lógica de usuários e segurança não depende do tema visual.
+Projeto da disciplina Aplicativos Web (Sistemas de Informação, UMC), feito com **Spring Boot 4.1**, **Spring Security**, **Thymeleaf** e **MongoDB Atlas**, em duas partes:
 
-## O que o sistema faz
+1. **Login seguro** (`v1.0.0`): autenticação e autorização com três perfis.
+2. **Dashboard administrativo do Thindesk** (`v2.0.0`): painel de acompanhamento dos chamados técnicos, alimentado por uma API REST própria.
+
+## Entregáveis da Parte 2 (dashboard)
+
+| Entregável | Onde está |
+|---|---|
+| Documento: requisitos funcionais e não funcionais, endpoints, evidências e dashboard | [docs/documentacao-dashboard.md](docs/documentacao-dashboard.md) |
+| Evidências de testes (prints) | [docs/evidencias](docs/evidencias) |
+| Coleção do Postman com 26 testes automatizados | [postman/thindesk-api.postman_collection.json](postman/thindesk-api.postman_collection.json) |
+| Vídeo de apresentação (até 3 minutos) | [docs/video/apresentacao-thindesk.mp4](docs/video/apresentacao-thindesk.mp4) |
+| Código da API | pacotes `api`, `chamado` e `dashboard` em `src/main/java/com/joaohen/login_seguro` |
+
+### Dashboard em resumo
+
+- Indicadores gerais, gráfico de abertos e resolvidos por período, situação dos chamados, tipos mais atendidos, filtros e atualização automática (RF01 a RF07).
+- Detalhe de cada chamado com o histórico de considerações técnicas.
+- API em `/api/dashboard/*` e `/api/chamados/*`, restrita a ADMIN e MODERADOR.
+- Na primeira execução são gerados 400 chamados de demonstração dos últimos 180 dias (`app.chamados.gerar-exemplos=true`), para o painel já abrir com dados.
+
+Para ver: execute o projeto (seções abaixo), entre como `admin@loginseguro.dev` ou `moderador@loginseguro.dev` e clique em **Dashboard**.
+
+## O que o login seguro faz
 
 - Cadastro com validação (nome, e-mail único, senha com no mínimo 8 caracteres, letras e números, confirmação de senha)
 - Login e logout com Spring Security; a senha é guardada como hash **BCrypt** (fator 12)
@@ -18,6 +39,8 @@ Foi feito de forma modular para servir de base a outros projetos: a lógica de u
 | `/login`, `/cadastro` | Qualquer pessoa |
 | `/painel` | Qualquer usuário logado |
 | `/moderacao` | ADMIN e MODERADOR |
+| `/dashboard` | ADMIN e MODERADOR |
+| `/api/**` | ADMIN e MODERADOR (sessão do navegador ou HTTP Basic) |
 | `/admin/usuarios` | Somente ADMIN |
 
 ## Requisitos
@@ -83,6 +106,7 @@ Contas criadas pela tela de cadastro começam como USUARIO; o administrador muda
 | `usuarios` | Nome, e-mail (índice único), hash da senha, perfil, situação, tentativas de login | `UsuarioRepository` (Spring Data MongoDB) |
 | `sessions` | Sessões HTTP serializadas, com o contexto de segurança do usuário logado | `mongodb-spring-session` (`@EnableMongoHttpSession`) |
 | `registros_acesso` | Entradas, saídas e tentativas recusadas, com IP e navegador | `RegistroAcessoRepository` |
+| `chamados` | Chamados técnicos com protocolo, tipo, prioridade, status, datas e histórico de considerações | `ChamadoRepository` e `ChamadoConsultas` (Aggregation) |
 
 A conexão usa as propriedades `spring.mongodb.uri` e `spring.mongodb.database`. No Spring Boot 4 elas substituíram as antigas `spring.data.mongodb.*`.
 Como as sessões ficam no banco, o usuário continua logado mesmo se a aplicação for reiniciada, e várias instâncias podem compartilhar as mesmas sessões.
@@ -95,13 +119,17 @@ src/main/java/com/joaohen/login_seguro
 ├── usuario/      Entidade Usuario, perfis, repositório, regras de negócio e formulário de cadastro
 ├── seguranca/    Integração com o Spring Security e registro de acessos
 ├── web/          Controllers MVC e atributos comuns a todas as telas
+├── api/          Endpoints REST (/api/chamados e /api/dashboard) e tratamento de erros
+├── chamado/      Modelo de chamados, regras de status, consultas ao MongoDB e dados de demonstração
+├── dashboard/    Cálculo dos indicadores, séries por período e ranking de tipos
 └── comum/        Exceção de regra de negócio
 
 src/main/resources
 ├── templates/layout/      Layouts reaproveitáveis (acesso e sistema)
 ├── templates/fragmentos/  Cabeçalho HTML, selo, ícones e mensagens
-├── templates/...          Uma pasta por área: auth, painel, moderacao, admin, erro
+├── templates/...          Uma pasta por área: auth, painel, moderacao, admin, dashboard, erro
 ├── static/css/base.css    Estrutura e componentes; só usa variáveis de cor
+├── static/js/             dashboard.js (consome a API) e Chart.js 4.4
 ├── static/temas/          Um arquivo por tema, definindo as variáveis
 └── static/img/            Padrões de fundo em SVG
 ```
@@ -121,6 +149,11 @@ Nenhum template ou classe Java precisa mudar. Para mudar o nome ou o slogan do s
 
 ## Gitflow
 
-- `main`: versões entregues, marcadas com tags (`v1.0.0`)
+- `main`: versões entregues, marcadas com tags (`v1.0.0` login seguro, `v2.0.0` dashboard)
 - `develop`: integração das funcionalidades
-- `feature/*`: uma branch por funcionalidade, unida à `develop` com `--no-ff`
+- `feature/*`: uma branch por funcionalidade, unida à `develop` com `--no-ff` (na Parte 2: `feature/api-chamados`, `feature/dashboard`, `feature/testes` e `feature/documentacao`)
+- `release/*`: preparação de cada versão antes de ir para a `main`
+
+## Observações
+
+- O cluster gratuito (M0) do MongoDB Atlas é pausado após um período sem uso. Se a aplicação não conectar, reative o cluster no painel do Atlas.
